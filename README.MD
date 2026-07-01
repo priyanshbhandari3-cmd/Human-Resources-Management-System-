@@ -67,13 +67,7 @@ npm install
 
 ### Environment Variables
 
-Create `backend/.env`:
-
-```env
-MONGO_URI=mongodb://localhost:27017/HRMS
-JWT_SECRET=your_jwt_secret_here
-PORT=5000
-```
+Create a local environment file for the backend before starting the app. Add your own values for the MongoDB connection, JWT secret, and server port, and keep this file local.
 
 ### Run Development Servers
 
