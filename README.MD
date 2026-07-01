@@ -42,12 +42,7 @@ HRMS/
 └── README.MD
 ```
 
-## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- MongoDB running locally on `mongodb://localhost:27017`
 
 ### Installation
 
