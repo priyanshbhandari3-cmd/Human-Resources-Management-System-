@@ -67,11 +67,11 @@ Create a local environment file for the backend before starting the app. Add you
 ### Run Development Servers
 
 ```bash
-# Terminal 1 — Backend (port 5000)
+# Terminal 1 — Backend 
 cd backend
 npm run dev
 
-# Terminal 2 — Frontend (port 5173)
+# Terminal 2 — Frontend 
 cd frontend
 npm run dev
 ```
