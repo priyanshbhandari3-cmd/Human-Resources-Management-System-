@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: import.meta.env.VITE_API_URL||' https://human-resources-management-system-dkmv.onrender.com'
 });
 
 // Attach JWT token to every request
