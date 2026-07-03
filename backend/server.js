@@ -17,6 +17,11 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/attendance", require("./routes/attendanceRoutes"));
 app.use("/api/leave", require("./routes/leaveRoutes"));
+app.use("/api/company", require("./routes/companyRoutes"));
+app.use("/api/payroll", require("./routes/payrollRoutes"));
+app.use("/api/performance", require("./routes/performanceRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use("/api/reports", require("./routes/reportRoutes"));
 
 // Health check
 app.get("/", (req, res) => {

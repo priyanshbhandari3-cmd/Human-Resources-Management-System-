@@ -3,6 +3,12 @@ const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: [true, "Company ID is required"],
+    },
+
     name: {
       type: String,
       required: [true, "Name is required"],
@@ -12,7 +18,6 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true,
       lowercase: true,
       trim: true,
       match: [
@@ -63,6 +68,10 @@ const userSchema = new mongoose.Schema(
     timestamps: true, // adds createdAt & updatedAt
   }
 );
+
+// --------------- Indexes ---------------
+// Email must be unique within the same company (not globally)
+userSchema.index({ email: 1, companyId: 1 }, { unique: true });
 
 // --------------- Middleware ---------------
 // Password hashing is handled in the controller (authController.js)

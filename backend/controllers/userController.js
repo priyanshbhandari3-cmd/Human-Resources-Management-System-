@@ -14,6 +14,7 @@ const createUser = async (req, res) => {
   try {
     const { name, email, password, role, department } = req.body;
     const creatorRole = req.user.role;
+    const companyId = req.user.companyId;
 
     // Validate required fields
     if (!name || !email || !password || !role) {
@@ -32,12 +33,12 @@ const createUser = async (req, res) => {
       });
     }
 
-    // Check if email already exists
-    const existingUser = await User.findOne({ email });
+    // Check if email already exists within this company
+    const existingUser = await User.findOne({ email, companyId });
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "A user with this email already exists.",
+        message: "A user with this email already exists in your company.",
       });
     }
 
@@ -45,7 +46,7 @@ const createUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Build user data
+    // Build user data (scoped to company)
     const userData = {
       name,
       email,
@@ -53,6 +54,7 @@ const createUser = async (req, res) => {
       role,
       department,
       createdBy: req.user.id,
+      companyId,
     };
 
     // If creating an employee, set managerId to the creator (manager)
@@ -84,20 +86,21 @@ const createUser = async (req, res) => {
 // GET /api/users/my-team
 const getMyTeam = async (req, res) => {
   try {
-    const { id, role } = req.user;
+    const { id, role, companyId } = req.user;
     let users;
 
     if (role === "superadmin") {
-      // Superadmin sees all users
-      users = await User.find().select("-password");
+      // Superadmin sees all users in their company
+      users = await User.find({ companyId }).select("-password");
     } else if (role === "admin") {
-      // Admin sees all managers and employees
+      // Admin sees all managers and employees in their company
       users = await User.find({
+        companyId,
         role: { $in: ["manager", "employee"] },
       }).select("-password");
     } else if (role === "manager") {
-      // Manager sees only employees under them
-      users = await User.find({ managerId: id }).select("-password");
+      // Manager sees only employees under them in their company
+      users = await User.find({ companyId, managerId: id }).select("-password");
     } else {
       return res.status(403).json({
         success: false,
@@ -123,7 +126,7 @@ const getMyTeam = async (req, res) => {
 // GET /api/users/all
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find({ companyId: req.user.companyId }).select("-password");
 
     res.status(200).json({
       success: true,
@@ -143,12 +146,15 @@ const getAllUsers = async (req, res) => {
 // PATCH /api/users/:id/toggle-status
 const toggleUserStatus = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
+    const user = await User.findOne({
+      _id: req.params.id,
+      companyId: req.user.companyId,
+    }).select("-password");
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found.",
+        message: "User not found in your company.",
       });
     }
 
@@ -181,12 +187,15 @@ const toggleUserStatus = async (req, res) => {
 // DELETE /api/users/:id
 const deleteUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findOne({
+      _id: req.params.id,
+      companyId: req.user.companyId,
+    });
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found.",
+        message: "User not found in your company.",
       });
     }
 

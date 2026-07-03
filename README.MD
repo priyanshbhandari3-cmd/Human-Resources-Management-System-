@@ -1,6 +1,6 @@
-# 🏢 HRMS — Human Resource Management System
+# 🏢 Multi-Tenant HRMS — Human Resource Management System
 
-A full-stack MERN application for managing employees, attendance, leaves, and team hierarchies with role-based access control.
+A full-stack HRMS application built with React, Vite, Node.js, Express, MongoDB, and JWT authentication.
 
 ## Tech Stack
 
@@ -11,115 +11,119 @@ A full-stack MERN application for managing employees, attendance, leaves, and te
 | Database | MongoDB + Mongoose |
 | Auth | JWT (JSON Web Tokens) |
 
-## Features
+## What this app does
 
-- **Role-Based Access** — Superadmin → Admin → Manager → Employee hierarchy
-- **Attendance Tracking** — Check-in/out with automatic work-hour calculation
-- **Leave Management** — Apply, approve/reject with overlap detection
-- **User Management** — Create, toggle status, delete users per role
-- **Dashboard** — Role-specific views with stats and team overviews
-- **Global Settings** — Configurable leave policies and working hours
+- Multi-tenant HRMS workflow with company and user isolation
+- Role-based user hierarchy: `superadmin`, `admin`, `manager`, `employee`
+- Attendance check-in/check-out tracking (for employees, managers, and admins)
+- Leave application, approval, rejection workflow
+- Payroll, performance, notification, and reporting endpoints
+- Task assignment and tracking system between managers and employees
+- Protected frontend pages per user role
 
-## Project Structure
+## Repository Structure
 
 ```
 HRMS/
 ├── backend/
-│   ├── config/         # DB connection
-│   ├── controllers/    # Auth, User, Attendance, Leave
-│   ├── middleware/      # JWT auth, role-based access
-│   ├── models/         # Mongoose schemas
-│   ├── routes/         # API route definitions
-│   └── server.js       # Express app entry point
+│   ├── config/           # Database connection setup
+│   ├── controllers/      # Request handlers for auth, users, leave, attendance, etc.
+│   ├── middleware/       # JWT auth and role-based authorization
+│   ├── models/           # Mongoose schemas
+│   ├── routes/           # Express route definitions
+│   └── server.js         # Express application entry point
 ├── frontend/
+│   ├── public/           # Static assets
 │   ├── src/
-│   │   ├── api/        # Axios instance
-│   │   ├── components/ # Navbar, Sidebar, MainLayout
-│   │   ├── context/    # AuthContext (JWT session)
-│   │   ├── pages/      # Home, Login, Register, Dashboards
-│   │   └── routes/     # ProtectedRoute component
+│   │   ├── api/          # Axios instance and API helpers
+│   │   ├── components/   # Shared UI components
+│   │   ├── context/      # AuthContext for login/session state
+│   │   ├── pages/        # Application pages by role and feature
+│   │   └── routes/       # ProtectedRoute component
+│   ├── package.json
 │   └── vite.config.js
 └── README.MD
 ```
 
+## Setup
 
-
-### Installation
+### 1. Install dependencies
 
 ```bash
-# Clone the repo
-git clone <your-repo-url>
-cd HRMS
-
-# Install backend dependencies
 cd backend
 npm install
 
-# Install frontend dependencies
 cd ../frontend
 npm install
 ```
-
-### Environment Variables
-
-Create a local environment file for the backend before starting the app. Add your own values for the MongoDB connection, JWT secret, and server port, and keep this file local.
-
-### Run Development Servers
+### 2. Run development servers
 
 ```bash
-# Terminal 1 — Backend 
+# Start backend
 cd backend
-npm run dev
+npm start
 
-# Terminal 2 — Frontend 
-cd frontend
+# Start frontend
+cd ../frontend
 npm run dev
 ```
 
-## API Routes
+## Backend Scripts
+
+In `backend/package.json`:
+
+- `npm start` — start the API with Node
+- `npm run dev` — start the API with `nodemon`
+
+## Frontend Scripts
+
+In `frontend/package.json`:
+
+- `npm run dev` — start Vite development server
+- `npm run build` — build production bundle
+- `npm run preview` — preview production build
+- `npm run lint` — run linter
+
+## API Endpoints
 
 ### Auth
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register-superadmin` | One-time superadmin registration |
-| POST | `/api/auth/login` | Login (returns JWT) |
+| POST | `/api/auth/register-superadmin` | Register the first superadmin |
+| POST | `/api/auth/login` | Login and receive JWT token |
 
-### Users (Auth Required)
-| Method | Endpoint | Allowed Roles |
-|--------|----------|---------------|
-| POST | `/api/users/create` | Superadmin, Admin, Manager |
-| GET | `/api/users/my-team` | Superadmin, Admin, Manager |
-| GET | `/api/users/all` | Superadmin, Admin |
-| PATCH | `/api/users/:id/toggle-status` | Superadmin, Admin |
-| DELETE | `/api/users/:id` | Superadmin, Admin |
+### Users
+| Method | Endpoint | Roles |
+|--------|----------|-------|
+| POST | `/api/users/create` | `superadmin`, `admin`, `manager` |
+| GET | `/api/users/my-team` | `superadmin`, `admin`, `manager` |
+| GET | `/api/users/all` | `superadmin`, `admin` |
+| PATCH | `/api/users/:id/toggle-status` | `superadmin`, `admin` |
+| DELETE | `/api/users/:id` | `superadmin`, `admin` |
 
-### Attendance (Auth Required)
-| Method | Endpoint | Allowed Roles |
-|--------|----------|---------------|
-| POST | `/api/attendance/checkin` | Employee |
-| POST | `/api/attendance/checkout` | Employee |
-| GET | `/api/attendance/my` | Employee |
-| GET | `/api/attendance/team` | Manager |
-| GET | `/api/attendance/all` | Superadmin, Admin |
+### Attendance
+| Method | Endpoint | Roles |
+|--------|----------|-------|
+| POST | `/api/attendance/checkin` | `employee`, `manager`, `admin` |
+| POST | `/api/attendance/checkout` | `employee`, `manager`, `admin` |
+| GET | `/api/attendance/my` | `employee`, `manager`, `admin` |
+| GET | `/api/attendance/team` | `manager` |
+| GET | `/api/attendance/all` | `superadmin`, `admin` |
 
-### Leaves (Auth Required)
-| Method | Endpoint | Allowed Roles |
-|--------|----------|---------------|
-| POST | `/api/leave/apply` | Employee |
-| GET | `/api/leave/my` | Employee |
-| GET | `/api/leave/pending` | Manager |
-| PATCH | `/api/leave/:id/review` | Manager |
-| GET | `/api/leave/all` | Superadmin, Admin |
+### Leave
+| Method | Endpoint | Roles |
+|--------|----------|-------|
+| POST | `/api/leave/apply` | `employee` |
+| GET | `/api/leave/my` | `employee` |
+| GET | `/api/leave/pending` | `manager` |
+| PATCH | `/api/leave/:id/review` | `manager` |
+| GET | `/api/leave/all` | `superadmin`, `admin` |
 
-## Role Hierarchy
+## Notes
 
-```
-Superadmin ─── creates ──→ Admin
-Admin ──────── creates ──→ Manager
-Manager ────── creates ──→ Employee
-```
-
-Each role can only create users one level below them.
+- The backend connects to MongoDB using `MONGO_URI`.
+- The frontend uses an Axios instance and React context for authentication.
+- The API includes built-in route protection and 404/error handlers.
 
 ## License
 

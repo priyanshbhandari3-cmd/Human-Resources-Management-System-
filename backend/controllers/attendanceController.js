@@ -6,15 +6,17 @@ const User = require("../models/User");
 const checkIn = async (req, res) => {
   try {
     const userId = req.user.id;
+    const companyId = req.user.companyId;
 
     // Start and end of today for duplicate check
     const today = new Date();
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1);
 
-    // Check if already checked in today
+    // Check if already checked in today (scoped to company)
     const existing = await Attendance.findOne({
       userId,
+      companyId,
       date: { $gte: startOfDay, $lte: endOfDay },
     });
 
@@ -27,6 +29,7 @@ const checkIn = async (req, res) => {
 
     const attendance = await Attendance.create({
       userId,
+      companyId,
       date: startOfDay,
       checkIn: new Date(),
       status: "present",
@@ -51,15 +54,17 @@ const checkIn = async (req, res) => {
 const checkOut = async (req, res) => {
   try {
     const userId = req.user.id;
+    const companyId = req.user.companyId;
 
     // Start and end of today
     const today = new Date();
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1);
 
-    // Find today's attendance record
+    // Find today's attendance record (scoped to company)
     const attendance = await Attendance.findOne({
       userId,
+      companyId,
       date: { $gte: startOfDay, $lte: endOfDay },
     });
 
@@ -107,9 +112,10 @@ const checkOut = async (req, res) => {
 // GET /api/attendance/my
 const getMyAttendance = async (req, res) => {
   try {
-    const attendance = await Attendance.find({ userId: req.user.id }).sort({
-      date: -1,
-    });
+    const attendance = await Attendance.find({
+      userId: req.user.id,
+      companyId: req.user.companyId,
+    }).sort({ date: -1 });
 
     res.status(200).json({
       success: true,
@@ -129,8 +135,13 @@ const getMyAttendance = async (req, res) => {
 // GET /api/attendance/team
 const getTeamAttendance = async (req, res) => {
   try {
-    // Find all employees under this manager
-    const teamMembers = await User.find({ managerId: req.user.id }).select("_id");
+    const companyId = req.user.companyId;
+
+    // Find all employees under this manager within the same company
+    const teamMembers = await User.find({
+      managerId: req.user.id,
+      companyId,
+    }).select("_id");
     const teamIds = teamMembers.map((member) => member._id);
 
     if (teamIds.length === 0) {
@@ -142,7 +153,10 @@ const getTeamAttendance = async (req, res) => {
       });
     }
 
-    const attendance = await Attendance.find({ userId: { $in: teamIds } })
+    const attendance = await Attendance.find({
+      userId: { $in: teamIds },
+      companyId,
+    })
       .populate("userId", "name email department")
       .sort({ date: -1 });
 
@@ -164,7 +178,7 @@ const getTeamAttendance = async (req, res) => {
 // GET /api/attendance/all
 const getAllAttendance = async (req, res) => {
   try {
-    const attendance = await Attendance.find()
+    const attendance = await Attendance.find({ companyId: req.user.companyId })
       .populate("userId", "name email role department")
       .sort({ date: -1 });
 

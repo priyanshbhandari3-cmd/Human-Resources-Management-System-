@@ -10,14 +10,14 @@ const {
   getAllAttendance,
 } = require("../controllers/attendanceController");
 
-// POST /api/attendance/checkin — employee only
-router.post("/checkin", auth, checkRole(["employee"]), checkIn);
+// POST /api/attendance/checkin — employee, manager, admin
+router.post("/checkin", auth, checkRole(["employee", "manager", "admin"]), checkIn);
 
-// POST /api/attendance/checkout — employee only
-router.post("/checkout", auth, checkRole(["employee"]), checkOut);
+// POST /api/attendance/checkout — employee, manager, admin
+router.post("/checkout", auth, checkRole(["employee", "manager", "admin"]), checkOut);
 
-// GET /api/attendance/my — employee only
-router.get("/my", auth, checkRole(["employee"]), getMyAttendance);
+// GET /api/attendance/my — employee, manager, admin
+router.get("/my", auth, checkRole(["employee", "manager", "admin"]), getMyAttendance);
 
 // GET /api/attendance/team — manager only
 router.get("/team", auth, checkRole(["manager"]), getTeamAttendance);

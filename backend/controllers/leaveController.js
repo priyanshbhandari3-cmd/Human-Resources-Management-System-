@@ -1,11 +1,13 @@
 const Leave = require("../models/Leave");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 
 // ---------- Apply Leave ----------
 // POST /api/leave/apply
 const applyLeave = async (req, res) => {
   try {
     const { leaveType, startDate, endDate, reason } = req.body;
+    const companyId = req.user.companyId;
 
     // Validate required fields
     if (!leaveType || !startDate || !endDate || !reason) {
@@ -40,9 +42,10 @@ const applyLeave = async (req, res) => {
     const diffTime = end.getTime() - start.getTime();
     const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-    // Check for overlapping leave
+    // Check for overlapping leave (scoped to company)
     const overlapping = await Leave.findOne({
       employeeId: req.user.id,
+      companyId,
       status: { $ne: "rejected" },
       $or: [
         { startDate: { $lte: end }, endDate: { $gte: start } },
@@ -58,6 +61,7 @@ const applyLeave = async (req, res) => {
 
     const leave = await Leave.create({
       employeeId: req.user.id,
+      companyId,
       leaveType,
       startDate: start,
       endDate: end,
@@ -84,7 +88,10 @@ const applyLeave = async (req, res) => {
 // GET /api/leave/my
 const getMyLeaves = async (req, res) => {
   try {
-    const leaves = await Leave.find({ employeeId: req.user.id })
+    const leaves = await Leave.find({
+      employeeId: req.user.id,
+      companyId: req.user.companyId,
+    })
       .populate("reviewedBy", "name")
       .sort({ createdAt: -1 });
 
@@ -106,8 +113,13 @@ const getMyLeaves = async (req, res) => {
 // GET /api/leave/pending
 const getPendingLeaves = async (req, res) => {
   try {
-    // Find employees under this manager
-    const teamMembers = await User.find({ managerId: req.user.id }).select("_id");
+    const companyId = req.user.companyId;
+
+    // Find employees under this manager within the same company
+    const teamMembers = await User.find({
+      managerId: req.user.id,
+      companyId,
+    }).select("_id");
     const teamIds = teamMembers.map((member) => member._id);
 
     if (teamIds.length === 0) {
@@ -121,6 +133,7 @@ const getPendingLeaves = async (req, res) => {
 
     const leaves = await Leave.find({
       employeeId: { $in: teamIds },
+      companyId,
       status: "pending",
     })
       .populate("employeeId", "name email department")
@@ -145,6 +158,7 @@ const getPendingLeaves = async (req, res) => {
 const reviewLeave = async (req, res) => {
   try {
     const { status } = req.body;
+    const companyId = req.user.companyId;
 
     // Validate status
     if (!status || !["approved", "rejected"].includes(status)) {
@@ -154,12 +168,12 @@ const reviewLeave = async (req, res) => {
       });
     }
 
-    // Find the leave
-    const leave = await Leave.findById(req.params.id);
+    // Find the leave (scoped to company)
+    const leave = await Leave.findOne({ _id: req.params.id, companyId });
     if (!leave) {
       return res.status(404).json({
         success: false,
-        message: "Leave request not found.",
+        message: "Leave request not found in your company.",
       });
     }
 
@@ -186,6 +200,15 @@ const reviewLeave = async (req, res) => {
     leave.reviewedAt = new Date();
     await leave.save();
 
+    // Create Notification
+    await Notification.create({
+      userId: leave.employeeId,
+      companyId,
+      title: `Leave Request ${status === 'approved' ? 'Approved' : 'Rejected'}`,
+      message: `Your leave request from ${new Date(leave.startDate).toLocaleDateString()} to ${new Date(leave.endDate).toLocaleDateString()} has been ${status}.`,
+      type: "leave",
+    });
+
     res.status(200).json({
       success: true,
       message: `Leave ${status} successfully.`,
@@ -204,7 +227,7 @@ const reviewLeave = async (req, res) => {
 // GET /api/leave/all
 const getAllLeaves = async (req, res) => {
   try {
-    const leaves = await Leave.find()
+    const leaves = await Leave.find({ companyId: req.user.companyId })
       .populate("employeeId", "name email role department")
       .populate("reviewedBy", "name")
       .sort({ createdAt: -1 });

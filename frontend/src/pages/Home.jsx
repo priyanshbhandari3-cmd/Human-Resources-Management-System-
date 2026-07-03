@@ -1,464 +1,269 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const navLinks = [
   { label: "Home", href: "#home" },
   { label: "Features", href: "#features" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "How it Works", href: "#how-it-works" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 const features = [
-  {
-    title: "Attendance Tracking",
-    description:
-      "Effortless clock-in and clock-out with real-time tracking, geofencing support, and automated timesheets for your entire workforce.",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    color: "from-blue-500 to-cyan-400",
-    bgGlow: "bg-blue-500/10",
-  },
-  {
-    title: "Leave Management",
-    description:
-      "Streamlined leave applications, multi-level approvals, balance tracking, and customizable leave policies tailored to your organization.",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: "from-emerald-500 to-teal-400",
-    bgGlow: "bg-emerald-500/10",
-  },
-  {
-    title: "Team Management",
-    description:
-      "Build, organize and oversee teams with role-based hierarchies, department structuring, and task delegation across your organization.",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-    color: "from-violet-500 to-purple-400",
-    bgGlow: "bg-violet-500/10",
-  },
-  {
-    title: "Reports & Analytics",
-    description:
-      "Powerful dashboards with visual insights into attendance trends, leave patterns, headcount analytics, and workforce productivity.",
-    icon: (
-      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
-    color: "from-amber-500 to-orange-400",
-    bgGlow: "bg-amber-500/10",
-  },
+  { title: "Attendance Tracking", desc: "Real-time clock in/out with automated timesheets.", icon: "⏰" },
+  { title: "Leave Management", desc: "Multi-level approvals and automated leave balances.", icon: "🏖️" },
+  { title: "Team Hierarchies", desc: "Manage departments, managers, and employees easily.", icon: "👥" },
+  { title: "Analytics & Reports", desc: "Visual dashboards for deep workforce insights.", icon: "📊" },
 ];
 
-const stats = [
-  { label: "Companies Trust Us", value: "500+" },
-  { label: "Active Employees", value: "50K+" },
-  { label: "Uptime Guaranteed", value: "99.9%" },
-  { label: "Support Response", value: "<2hrs" },
+const steps = [
+  { step: "1", title: "Register Company", desc: "Sign up and create your workspace in seconds." },
+  { step: "2", title: "Invite Team", desc: "Add managers and employees to your departments." },
+  { step: "3", title: "Automate HR", desc: "Let our system handle attendance, leaves, and tracking." },
+];
+
+const pricing = [
+  { name: "Free", price: "$0", desc: "For small teams just getting started.", features: ["Up to 10 employees", "Basic Attendance", "Leave Management"] },
+  { name: "Basic", price: "$49", desc: "Perfect for growing businesses.", features: ["Up to 50 employees", "Advanced Reports", "Priority Support"], popular: true, comingSoon: true },
+  { name: "Premium", price: "$99", desc: "Everything you need for a large enterprise.", features: ["Unlimited employees", "Custom Policies", "24/7 Dedicated Support"], comingSoon: true },
+];
+
+const faqs = [
+  { q: "Is there a free trial?", a: "Yes! You can start with our Free plan which is free forever for up to 10 employees." },
+  { q: "Can I upgrade my plan later?", a: "Absolutely. You can upgrade or downgrade your plan at any time from the billing dashboard." },
+  { q: "Is my data secure?", a: "We use enterprise-grade encryption to ensure your data is always safe and secure." },
+  { q: "Do you offer customer support?", a: "Yes, Basic and Premium plans include priority and 24/7 support respectively." },
+  { q: "Can managers approve leaves?", a: "Yes, our hierarchical system routes leave requests to the direct manager for approval." },
 ];
 
 const Home = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
 
   return (
-    <div className="min-h-screen bg-primary text-white overflow-x-hidden" id="home">
-      {/* ============ NAVBAR ============ */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-primary/80 backdrop-blur-xl border-b border-white/5">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-300" id="home">
+      {/* NAVBAR */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-18">
-            {/* Logo */}
+          <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-secondary to-accent rounded-xl flex items-center justify-center shadow-lg shadow-secondary/30">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-                </svg>
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                <span className="text-white font-bold text-xl">H</span>
               </div>
-              <span className="text-xl font-bold tracking-tight">HRMS</span>
+              <span className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">HRMS</span>
             </div>
 
-            {/* Desktop Links */}
             <div className="hidden md:flex items-center gap-8">
               {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200 relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 hover:after:w-full after:h-0.5 after:bg-accent after:transition-all after:duration-300"
-                >
+                <a key={link.label} href={link.href} className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary-light transition-colors">
                   {link.label}
                 </a>
               ))}
             </div>
 
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-3">
-              <Link
-                to="/register"
-                className="hidden md:inline-flex px-5 py-2.5 border border-white/15 text-slate-300 hover:text-white hover:bg-white/5 text-sm font-semibold rounded-xl transition-all duration-300"
-              >
-                Register
-              </Link>
-              <Link
-                to="/login"
-                className="hidden md:inline-flex px-5 py-2.5 bg-gradient-to-r from-secondary to-secondary-light text-white text-sm font-semibold rounded-xl shadow-lg shadow-secondary/25 hover:shadow-secondary/40 hover:scale-105 transition-all duration-300"
-              >
-                Login
-              </Link>
-              {/* Mobile hamburger */}
+            <div className="flex items-center gap-4">
+              {/* Dark Mode Toggle */}
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                aria-label="Toggle menu"
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+                aria-label="Toggle Dark Mode"
               >
-                {mobileMenuOpen ? (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                {darkMode ? (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fillRule="evenodd" clipRule="evenodd"></path></svg>
                 ) : (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                 )}
+              </button>
+
+              <Link to="/login" className="hidden md:block text-sm font-bold text-primary dark:text-primary-light hover:text-primary-dark transition-colors">Log In</Link>
+              <Link to="/register" className="hidden md:block px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all">
+                Get Started
+              </Link>
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2 text-slate-600 dark:text-slate-300">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {mobileMenuOpen ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
+                </svg>
               </button>
             </div>
           </div>
         </div>
-
+        
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-primary-dark/95 backdrop-blur-xl border-t border-white/5 animate-slide-down">
-            <div className="px-4 py-4 space-y-1">
+          <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 p-4 absolute w-full shadow-xl">
+            <div className="flex flex-col space-y-4">
               {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-                >
-                  {link.label}
-                </a>
+                <a key={link.label} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-slate-600 dark:text-slate-300 font-semibold">{link.label}</a>
               ))}
-              <Link
-                to="/register"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-              >
-                Register
-              </Link>
-              <Link
-                to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-3 text-sm font-semibold text-secondary hover:bg-secondary/10 rounded-xl transition-colors"
-              >
-                Login →
-              </Link>
+              <hr className="border-slate-100 dark:border-slate-800" />
+              <Link to="/login" className="text-primary dark:text-primary-light font-bold">Log In</Link>
+              <Link to="/register" className="text-center px-6 py-3 bg-primary text-white font-bold rounded-xl">Get Started</Link>
             </div>
           </div>
         )}
       </nav>
 
-      {/* ============ HERO SECTION ============ */}
-      <section className="relative pt-32 pb-20 lg:pt-44 lg:pb-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-1/4 w-80 h-80 bg-accent/8 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-light/30 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-secondary/10 border border-secondary/20 rounded-full text-sm text-secondary-light font-medium mb-8 animate-fade-in-up">
-              <span className="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
-              Trusted by 500+ companies worldwide
-            </div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight animate-fade-in-up" style={{animationDelay: "100ms"}}>
-              Manage Your HR{" "}
-              <br className="hidden sm:block" />
-              Operations{" "}
-              <span className="bg-gradient-to-r from-secondary via-accent to-secondary-light bg-clip-text text-transparent">
-                Seamlessly
-              </span>
-            </h1>
-
-            <p className="mt-6 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed animate-fade-in-up" style={{animationDelay: "200ms"}}>
-              From attendance tracking to leave management, team oversight to powerful analytics — 
-              everything your HR department needs in one unified, modern platform.
-            </p>
-
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{animationDelay: "300ms"}}>
-              <Link
-                to="/register"
-                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-secondary to-secondary-light text-white font-bold rounded-xl shadow-2xl shadow-secondary/30 hover:shadow-secondary/50 hover:scale-105 transition-all duration-300 text-center"
-              >
-                Get Started Free →
-              </Link>
-              <a
-                href="#features"
-                className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 font-semibold rounded-xl transition-all duration-300 text-center"
-              >
-                Explore Features
-              </a>
-            </div>
+      {/* HERO SECTION */}
+      <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 px-4 relative overflow-hidden bg-gradient-to-b from-blue-50 to-white dark:from-slate-900 dark:to-slate-900">
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight mb-8 animate-fade-in-up">
+            Modern HR Management, <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Simplified.</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
+            Empower your team with our all-in-one platform for attendance, leaves, and workforce analytics. Designed for growing enterprises.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+            <Link to="/register" className="px-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/30 hover:shadow-2xl hover:-translate-y-1 transition-all text-lg">
+              Start for Free
+            </Link>
+            <a href="#how-it-works" className="px-8 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-primary/30 dark:hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-lg">
+              See How It Works
+            </a>
           </div>
+        </div>
+      </section>
 
-          {/* Stats Bar */}
-          <div className="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto animate-fade-in-up" style={{animationDelay: "400ms"}}>
-            {stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="text-center p-5 bg-white/[0.03] border border-white/5 rounded-2xl backdrop-blur-sm"
-              >
-                <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-slate-500 mt-1 font-medium">{stat.label}</p>
+      {/* FEATURES SECTION */}
+      <section id="features" className="py-24 bg-white dark:bg-slate-900 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Everything You Need</h2>
+            <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">A complete suite of tools to manage your workforce efficiently.</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((f, i) => (
+              <div key={i} className="bg-slate-50 dark:bg-slate-800 rounded-3xl p-8 border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+                <div className="text-4xl mb-6 group-hover:scale-110 transition-transform origin-left">{f.icon}</div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{f.title}</h3>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ FEATURES SECTION ============ */}
-      <section id="features" className="py-20 lg:py-32 px-4 sm:px-6 lg:px-8 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-dark/50 to-transparent pointer-events-none"></div>
+      {/* HOW IT WORKS */}
+      <section id="how-it-works" className="py-24 bg-slate-900 dark:bg-slate-950 text-white px-4 relative overflow-hidden border-y border-slate-800">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-accent uppercase tracking-widest mb-3">
-              What We Offer
-            </p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-              Everything You Need to{" "}
-              <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">
-                Manage HR
-              </span>
-            </h2>
-            <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto">
-              Our comprehensive suite of tools empowers your HR team to work smarter, not harder.
-            </p>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">How It Works</h2>
+            <p className="text-slate-400 max-w-2xl mx-auto">Get up and running in minutes, not days.</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="group relative bg-white/[0.03] border border-white/5 rounded-2xl p-8 hover:bg-white/[0.06] hover:border-white/10 transition-all duration-500 overflow-hidden"
-              >
-                {/* Glow effect on hover */}
-                <div className={`absolute -top-20 -right-20 w-40 h-40 ${feature.bgGlow} rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-                
-                <div className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                  <span className="text-white">{feature.icon}</span>
+          <div className="grid md:grid-cols-3 gap-12 text-center">
+            {steps.map((s, i) => (
+              <div key={i} className="relative">
+                <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg shadow-primary/20">
+                  {s.step}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-white/90 transition-colors">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
-                  {feature.description}
-                </p>
+                <h3 className="text-xl font-bold mb-3">{s.title}</h3>
+                <p className="text-slate-400">{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ ABOUT SECTION ============ */}
-      <section id="about" className="py-20 lg:py-32 px-4 sm:px-6 lg:px-8">
+      {/* PRICING */}
+      <section id="pricing" className="py-24 bg-slate-50 dark:bg-slate-900 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Left visual */}
-            <div className="relative">
-              <div className="bg-gradient-to-br from-secondary/20 to-accent/10 border border-white/5 rounded-3xl p-8 lg:p-12 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent"></div>
-                <div className="relative z-10 space-y-6">
-                  {/* Mock dashboard card */}
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm font-semibold text-white">Team Overview</span>
-                      <span className="text-xs text-accent font-medium bg-accent/10 px-2 py-1 rounded-lg">Live</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-secondary">24</p>
-                        <p className="text-xs text-slate-400">Present</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-amber-400">3</p>
-                        <p className="text-xs text-slate-400">On Leave</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-accent">98%</p>
-                        <p className="text-xs text-slate-400">Rate</p>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Mock approval card */}
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 bg-violet-500/20 rounded-full flex items-center justify-center text-xs font-bold text-violet-300">JD</div>
-                      <div>
-                        <p className="text-sm font-medium text-white">Leave Request</p>
-                        <p className="text-xs text-slate-400">John Doe — Casual Leave</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <span className="px-3 py-1.5 bg-accent/10 text-accent text-xs font-semibold rounded-lg">✓ Approve</span>
-                      <span className="px-3 py-1.5 bg-red-500/10 text-red-400 text-xs font-semibold rounded-lg">✕ Reject</span>
-                    </div>
-                  </div>
-                </div>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Simple, Transparent Pricing</h2>
+            <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Choose the plan that fits your business needs.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {pricing.map((p, i) => (
+              <div key={i} className={`bg-white dark:bg-slate-800 rounded-3xl p-8 border ${p.popular ? 'border-primary dark:border-primary ring-4 ring-primary/10 dark:ring-primary/20 scale-105 shadow-2xl' : 'border-slate-200 dark:border-slate-700 shadow-lg'} relative flex flex-col ${p.comingSoon ? 'opacity-80' : ''}`}>
+                {p.popular && !p.comingSoon && <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Most Popular</span>}
+                {p.comingSoon && <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Coming Soon</span>}
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{p.name}</h3>
+                <p className="text-slate-500 dark:text-slate-400 mb-6">{p.desc}</p>
+                <div className="mb-8"><span className="text-5xl font-extrabold text-slate-900 dark:text-white">{p.price}</span><span className="text-slate-500 dark:text-slate-400">/mo</span></div>
+                <ul className="space-y-4 mb-8 flex-1">
+                  {p.features.map((feat, j) => (
+                    <li key={j} className={`flex items-center gap-3 font-medium ${p.comingSoon ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300'}`}>
+                      <svg className={`w-5 h-5 flex-shrink-0 ${p.comingSoon ? 'text-slate-300 dark:text-slate-600' : 'text-accent'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+                {p.comingSoon ? (
+                  <button disabled className="w-full py-4 rounded-xl font-bold text-center transition-all bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed">
+                    Coming Soon
+                  </button>
+                ) : (
+                  <Link to="/register" className={`w-full py-4 rounded-xl font-bold text-center transition-all ${p.popular ? 'bg-primary text-white hover:bg-primary-dark hover:shadow-lg' : 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600'}`}>
+                    Choose Plan
+                  </Link>
+                )}
               </div>
-              {/* Floating badge */}
-              <div className="absolute -bottom-4 -right-4 bg-accent text-white px-4 py-2 rounded-xl text-sm font-bold shadow-xl shadow-accent/30 animate-float">
-                ✨ Real-time Updates
-              </div>
-            </div>
-
-            {/* Right content */}
-            <div>
-              <p className="text-sm font-semibold text-accent uppercase tracking-widest mb-3">About Us</p>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-6">
-                Built for Modern{" "}
-                <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">
-                  HR Teams
-                </span>
-              </h2>
-              <p className="text-slate-400 leading-relaxed mb-6">
-                HRMS was born from a simple idea: managing people shouldn't be complicated. We've built a platform that combines powerful automation with an intuitive interface, so your HR team can focus on what truly matters — your people.
-              </p>
-              <div className="space-y-4">
-                {[
-                  "Role-based access for Superadmin, Admin, Manager & Employee",
-                  "Real-time attendance tracking with automated calculations",
-                  "Configurable leave policies with multi-level approval workflows",
-                  "Comprehensive analytics dashboards for data-driven decisions",
-                ].map((item) => (
-                  <div key={item} className="flex items-start gap-3">
-                    <div className="w-5 h-5 mt-0.5 bg-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-3 h-3 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="text-sm text-slate-300">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ============ CONTACT / CTA SECTION ============ */}
-      <section id="contact" className="py-20 lg:py-32 px-4 sm:px-6 lg:px-8 relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/80 to-transparent pointer-events-none"></div>
-        <div className="max-w-4xl mx-auto relative z-10 text-center">
-          <p className="text-sm font-semibold text-accent uppercase tracking-widest mb-3">Contact Us</p>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
-            Ready to Transform Your{" "}
-            <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">
-              HR Operations?
-            </span>
-          </h2>
-          <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
-            Join hundreds of companies that have already streamlined their HR processes with HRMS. Get started in minutes.
-          </p>
-
-          {/* Contact form */}
-          <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-8 max-w-xl mx-auto">
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Your Name"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary/30 transition-all text-sm"
-                />
-                <input
-                  type="email"
-                  placeholder="Your Email"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary/30 transition-all text-sm"
-                />
+      {/* FAQ */}
+      <section id="faq" className="py-24 bg-white dark:bg-slate-900 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Frequently Asked Questions</h2>
+          </div>
+          <div className="space-y-6">
+            {faqs.map((faq, i) => (
+              <div key={i} className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{faq.q}</h3>
+                <p className="text-slate-600 dark:text-slate-400">{faq.a}</p>
               </div>
-              <textarea
-                rows={4}
-                placeholder="Tell us about your organization..."
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary/30 transition-all text-sm resize-none"
-              ></textarea>
-              <button
-                type="submit"
-                className="w-full py-3.5 bg-gradient-to-r from-secondary to-secondary-light text-white font-bold rounded-xl shadow-lg shadow-secondary/25 hover:shadow-secondary/40 hover:scale-[1.02] transition-all duration-300 cursor-pointer"
-              >
-                Send Message
-              </button>
-            </form>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ============ FOOTER ============ */}
-      <footer className="bg-primary-dark/60 border-t border-white/5 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-            {/* Brand */}
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 bg-gradient-to-br from-secondary to-accent rounded-xl flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-                  </svg>
-                </div>
-                <span className="text-xl font-bold">HRMS</span>
-              </div>
-              <p className="text-sm text-slate-400 max-w-sm leading-relaxed">
-                A comprehensive Human Resource Management System built to simplify workforce management for organizations of all sizes.
-              </p>
+      {/* FOOTER */}
+      <footer className="bg-slate-900 text-slate-400 py-12 px-4 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 mb-8 border-b border-slate-800 pb-8">
+          <div className="col-span-2">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"><span className="text-white font-bold">H</span></div>
+              <span className="text-xl font-extrabold text-white">HRMS</span>
             </div>
-
-            {/* Quick Links */}
-            <div>
-              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Quick Links</h4>
-              <div className="space-y-2.5">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="block text-sm text-slate-400 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Contact</h4>
-              <div className="space-y-2.5 text-sm text-slate-400">
-                <p>📧 hr@hrmssolutions.com</p>
-                <p>📞 +91 6354855919</p>
-                <p>📍  Valsad, India</p>
-              </div>
-            </div>
+            <p className="max-w-sm">The modern HR operating system for your entire workforce. Built for scale, designed for humans.</p>
           </div>
-
-          <div className="mt-10 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-slate-500">
-              &copy; {new Date().getFullYear()} HRMS Solutions. All rights reserved.
-            </p>
-            <div className="flex items-center gap-6 text-sm text-slate-500">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Support</a>
-            </div>
+          <div>
+            <h4 className="text-white font-bold mb-4">Product</h4>
+            <ul className="space-y-2">
+              <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+              <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+              <li><a href="#faq" className="hover:text-white transition-colors">FAQ</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-white font-bold mb-4">Company</h4>
+            <ul className="space-y-2">
+              <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto text-sm flex flex-col md:flex-row justify-between items-center gap-4">
+          <p>© {new Date().getFullYear()} HRMS Inc. All rights reserved.</p>
+          <div className="flex gap-4">
+            <span className="cursor-pointer hover:text-white">Twitter</span>
+            <span className="cursor-pointer hover:text-white">LinkedIn</span>
+            <span className="cursor-pointer hover:text-white">GitHub</span>
           </div>
         </div>
       </footer>

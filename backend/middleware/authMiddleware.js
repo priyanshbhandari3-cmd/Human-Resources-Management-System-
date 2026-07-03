@@ -16,10 +16,11 @@ const auth = (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Attach user info to request
+    // Attach user info to request (includes companyId for multi-tenancy)
     req.user = {
       id: decoded.id,
       role: decoded.role,
+      companyId: decoded.companyId,
     };
 
     next();
